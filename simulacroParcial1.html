@@ -1,0 +1,496 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simulador de Parcial - EDI II</title>
+    <style>
+        :root {
+            --primary: #4f46e5;
+            --primary-hover: #4338ca;
+            --bg-color: #f3f4f6;
+            --card-bg: #ffffff;
+            --text-main: #1f2937;
+            --text-muted: #4b5563;
+            --border-color: #e5e7eb;
+            --correct-bg: #d1fae5;
+            --correct-border: #34d399;
+            --correct-text: #065f46;
+            --incorrect-bg: #fee2e2;
+            --incorrect-border: #f87171;
+            --incorrect-text: #991b1b;
+            --warning-bg: #fef3c7;
+            --warning-border: #fbbf24;
+            --warning-text: #92400e;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            line-height: 1.6;
+            padding: 20px 15px;
+        }
+
+        .container {
+            max-width: 850px;
+            margin: 0 auto;
+            background: var(--card-bg);
+            border-radius: 12px;
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #4f46e5 0%, #3b82f6 100%);
+            color: white;
+            padding: 40px 20px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.2em;
+            margin-bottom: 10px;
+            font-weight: 800;
+            letter-spacing: -0.5px;
+        }
+
+        .header h3 {
+            font-size: 1.2em;
+            font-weight: 500;
+            opacity: 0.9;
+        }
+
+        .header h4 {
+            font-size: 1em;
+            font-weight: 400;
+            opacity: 0.8;
+            margin-top: 5px;
+        }
+
+        .quiz-body {
+            padding: 30px 40px;
+        }
+
+        .warning-banner {
+            background-color: var(--warning-bg);
+            color: var(--warning-text);
+            padding: 15px 20px;
+            border-radius: 8px;
+            border-left: 5px solid var(--warning-border);
+            text-align: center;
+            font-weight: 600;
+            margin-bottom: 35px;
+            font-size: 0.95em;
+        }
+
+        .question-block {
+            margin-bottom: 30px;
+            padding: 25px;
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            background: #fafafa;
+            transition: all 0.3s ease;
+        }
+
+        .question-block:hover {
+            border-color: #d1d5db;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+        }
+
+        .question-title {
+            font-weight: 600;
+            font-size: 1.15em;
+            margin-bottom: 20px;
+            color: #111827;
+        }
+
+        .options {
+            list-style-type: none;
+        }
+
+        .options li {
+            margin: 12px 0;
+        }
+
+        label {
+            cursor: pointer;
+            display: flex;
+            align-items: flex-start;
+            padding: 15px;
+            border-radius: 8px;
+            background-color: #ffffff;
+            border: 2px solid var(--border-color);
+            transition: all 0.2s ease;
+            font-size: 1em;
+            color: var(--text-muted);
+        }
+
+        label:hover {
+            border-color: #9ca3af;
+            background-color: #f3f4f6;
+        }
+
+        input[type="radio"] {
+            margin-top: 4px;
+            margin-right: 15px;
+            width: 18px;
+            height: 18px;
+            cursor: pointer;
+            accent-color: var(--primary);
+            flex-shrink: 0;
+        }
+
+        button {
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            padding: 18px 25px;
+            font-size: 1.1em;
+            font-weight: 700;
+            border-radius: 8px;
+            cursor: pointer;
+            width: 100%;
+            margin-top: 10px;
+            transition: background 0.3s ease, transform 0.1s ease;
+            box-shadow: 0 4px 6px -1px rgba(79, 70, 229, 0.3);
+        }
+
+        button:hover:not(:disabled) {
+            background-color: var(--primary-hover);
+            transform: translateY(-1px);
+        }
+
+        button:disabled {
+            background-color: #9ca3af;
+            cursor: not-allowed;
+            box-shadow: none;
+        }
+
+        #resultado {
+            margin-top: 35px;
+            font-size: 1.2em;
+            text-align: center;
+            display: none;
+            padding: 30px;
+            border-radius: 10px;
+            line-height: 1.5;
+        }
+
+        .feedback {
+            margin-top: 20px;
+            font-size: 0.95em;
+            color: var(--incorrect-text);
+            background-color: var(--incorrect-bg);
+            border: 1px solid var(--incorrect-border);
+            padding: 15px 20px;
+            border-radius: 8px;
+            display: none;
+            line-height: 1.5;
+        }
+
+        .correct-bg { 
+            background-color: var(--correct-bg) !important; 
+            border-color: var(--correct-border) !important; 
+        }
+        
+        .incorrect-bg { 
+            background-color: #fffbeb !important; 
+            border-color: var(--warning-border) !important; 
+        }
+
+        /* Responsive Design */
+        @media (max-width: 600px) {
+            .header h1 { font-size: 1.8em; }
+            .quiz-body { padding: 20px 15px; }
+            .question-block { padding: 15px; }
+            .question-title { font-size: 1.05em; }
+            label { padding: 12px; font-size: 0.95em; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="header">
+        <h1>Simulador de Parcial</h1>
+        <h3>Espacio Curricular: EDI II</h3>
+        <h4>Tecnicatura Superior en Desarrollo de Software - Inst. Nuevo Horizonte</h4>
+    </div>
+    
+    <div class="quiz-body">
+        <div class="warning-banner">
+            ⚠️ ¡ATENCIÓN! Esto es solamente un simulacro de preparación. El resultado de este examen no influye en la nota oficial de la cátedra. ¡Éxitos en la práctica!
+        </div>
+        
+        <div id="quiz-container">
+            <!-- Preguntas inyectadas por JS -->
+        </div>
+
+        <button id="btn-enviar" onclick="evaluarParcial()">Entregar Examen de Prueba</button>
+        <div id="resultado"></div>
+    </div>
+</div>
+
+<script>
+    const preguntas = [
+        {
+            id: 1,
+            pregunta: "En Git, ¿qué comando de terminal se utiliza para confirmar los cambios en los archivos agregados añadiéndoles un mensaje descriptivo?",
+            opciones: ["A) git push", "B) git add", "C) git commit -m \"mensaje\"", "D) git clone"],
+            respuestaCorrecta: 2,
+            explicacion: "El comando git commit -m permite confirmar el archivo agregado y añadir una descripción de los cambios realizados."
+        },
+        {
+            id: 2,
+            pregunta: "Al crear un repositorio en GitHub para personalizar tu perfil público mediante un archivo README en Markdown, ¿qué nombre debes ingresar para que la plataforma te habilite esta función especial?",
+            opciones: ["A) Nombrando el repositorio exactamente igual que tu nombre de usuario.", "B) Seleccionando la opción de visibilidad Privada (Private).", "C) Creando un archivo index.html en la raíz del proyecto.", "D) Nombrando el repositorio como \"Portfolio-Personal\"."],
+            respuestaCorrecta: 0,
+            explicacion: "GitHub requiere que el repositorio tenga exactamente el mismo nombre que tu usuario para activar la función de perfil especial mediante README.md."
+        },
+        {
+            id: 3,
+            pregunta: "Verdadero o Falso. En el Aprendizaje Supervisado, el algoritmo se entrena entregándole un conjunto de datos etiquetado (labeled dataset) donde se incluye explícitamente la respuesta correcta o salida esperada.",
+            opciones: ["Verdadero", "Falso"],
+            respuestaCorrecta: 0,
+            explicacion: "Es Verdadero. El aprendizaje supervisado se basa en entregarle a la máquina tanto las entradas (X) como las respuestas esperadas (Y) para que aprenda a relacionarlas."
+        },
+        {
+            id: 4,
+            pregunta: "Si un portal inmobiliario recibe los metros cuadrados y la antigüedad de una casa para calcular automáticamente su precio estimado de venta en dólares, ¿qué tipo de algoritmo está utilizando?",
+            opciones: ["A) Clasificación Multiclase", "B) Regresión", "C) Agrupamiento (Clustering)", "D) Clasificación Binaria"],
+            respuestaCorrecta: 1,
+            explicacion: "La Regresión se utiliza para predecir una cantidad numérica continua, como el precio de venta de una propiedad o un tiempo de espera."
+        },
+        {
+            id: 5,
+            pregunta: "Un sistema de E-commerce detecta que el 'Usuario A' y el 'Usuario B' tienen historiales de reproducciones o compras 90% idénticos. Si el sistema le sugiere al Usuario A un producto que el Usuario B acaba de comprar, ¿qué técnica lógica de procesamiento está utilizando?",
+            opciones: ["A) Tokenización de texto", "B) Clasificación Binaria", "C) Lematización", "D) Filtrado Colaborativo"],
+            respuestaCorrecta: 3,
+            explicacion: "El Filtrado Colaborativo (parte del Aprendizaje No Supervisado) agrupa usuarios por similitud de hábitos para hacer recomendaciones."
+        },
+        {
+            id: 6,
+            pregunta: "En una red neuronal, ¿qué concepto matemático se aplica para introducir no linealidad en el sistema y definir si la neurona debe activarse transmitiendo su información a la siguiente capa?",
+            opciones: ["A) Suma Ponderada", "B) Función de Activación", "C) El Sesgo (Bias)", "D) Feature Engineering"],
+            respuestaCorrecta: 1,
+            explicacion: "La Función de Activación introduce no linealidad en el sistema, permitiendo que la red aprenda fronteras curvas y patrones complejos de la realidad."
+        },
+        {
+            id: 7,
+            pregunta: "Verdadero o Falso. En el enfoque de Deep Learning (Redes Neuronales Profundas), el programador debe escribir manualmente algoritmos para medir bordes y detectar formas en una imagen antes de pasar los datos al modelo.",
+            opciones: ["Verdadero", "Falso"],
+            respuestaCorrecta: 1,
+            explicacion: "Es Falso. A diferencia del Machine Learning clásico, en Deep Learning la red se encarga de descubrir y extraer autónomamente las características y bordes a lo largo de sus capas."
+        },
+        {
+            id: 8,
+            pregunta: "En la arquitectura de una Red Neuronal Profunda (Deep Learning), ¿cuál es la tarea de las Capas Iniciales (Nivel Bajo) en el procesamiento de una imagen?",
+            opciones: ["A) Ensamblar figuras semánticas completas como rostros humanos.", "B) Calcular la Función Softmax para predecir la etiqueta final.", "C) Aplicar Reglas de Asociación sobre los píxeles.", "D) Analizar las entradas y detectar primitivas geométricas elementales como líneas y bordes."],
+            respuestaCorrecta: 3,
+            explicacion: "Las capas de nivel bajo analizan las entradas directas y detectan patrones básicos como líneas, bordes y contrastes."
+        },
+        {
+            id: 9,
+            pregunta: "Dentro de una neurona artificial (el Perceptrón), ¿qué elemento actúa como factor multiplicador determinando la fuerza o relevancia con la que una entrada específica impactará en la decisión?",
+            opciones: ["A) El Sesgo (Bias)", "B) El Peso (Weight)", "C) La Capa de Salida", "D) La Función Escalón"],
+            respuestaCorrecta: 1,
+            explicacion: "El Peso (Weight) es el multiplicador de relevancia. Si es muy alto, el dato apoya fuertemente la decisión; si es negativo, funciona como freno."
+        },
+        {
+            id: 10,
+            pregunta: "Verdadero o Falso. En el Procesamiento de Lenguaje Natural (NLP), la Lematización es el proceso de reducir algorítmicamente una palabra a su forma base o de diccionario (ej. de 'fallaron' a 'fallar').",
+            opciones: ["Verdadero", "Falso"],
+            respuestaCorrecta: 0,
+            explicacion: "Es Verdadero. La lematización comprende el contexto gramatical para unificar el vocabulario y reducir su dispersión."
+        },
+        {
+            id: 11,
+            pregunta: "Al aplicar la técnica de vectorización clásica TF-IDF, ¿qué calcula específicamente el valor 'TF' (Frecuencia de Término)?",
+            opciones: ["A) Penaliza las palabras comunes como preposiciones y artículos.", "B) Qué tan común es esa palabra en toda la colección de textos.", "C) Cuenta cuántas veces aparece una palabra en un texto específico.", "D) La cantidad de oraciones separadas por coma en un texto."],
+            respuestaCorrecta: 2,
+            explicacion: "TF (Term Frequency) simplemente cuenta la cantidad de veces que aparece una palabra dentro de un texto o documento puntual."
+        },
+        {
+            id: 12,
+            pregunta: "Si aplicamos el primer paso de procesamiento de lenguaje natural (Tokenización) al texto 'El servidor falló.', considerando que un tokenizador robusto separa los signos de puntuación, ¿cuál será el resultado en arreglo?",
+            opciones: ["A) [\"El\", \"servidor\", \"fallar\", \".\"]", "B) [\"El\", \"servidor\", \"falló\"]", "C) [\"El\", \"servidor\", \"falló\", \".\"]", "D) [\"servidor\", \"falló\"]"],
+            respuestaCorrecta: 2,
+            explicacion: "La Tokenización divide la cadena en unidades mínimas, manteniendo el verbo conjugado tal como está pero separando el punto final como un token independiente."
+        },
+        {
+            id: 13,
+            pregunta: "Al ser un producto de la suite de Google, ¿cómo gestiona Google Colab el guardado y la colaboración de los cuadernos de código?",
+            opciones: ["A) Requiere exportar el código a un disco físico para poder compartirlo.", "B) Los cuadernos se guardan automáticamente en Google Drive y se pueden compartir mediante un simple enlace.", "C) Solo permite guardar los archivos en formato PDF no editable.", "D) Exige comprar una licencia empresarial para compartir el código."],
+            respuestaCorrecta: 1,
+            explicacion: "Google Colab tiene una estructura casi idéntica a Google Docs; guarda todo en Google Drive y facilita el trabajo en equipo mediante enlaces y revisión asíncrona."
+        },
+        {
+            id: 14,
+            pregunta: "Verdadero o Falso. El principio fundamental del Machine Learning es que el desarrollador escribe las reglas lógicas a mano mediante condicionales (if/else) para cada caso particular.",
+            opciones: ["Verdadero", "Falso"],
+            respuestaCorrecta: 1,
+            explicacion: "Es Falso. El desarrollador no escribe las reglas a mano; le entrega datos al algoritmo para que la máquina descubra y deduzca las reglas (el modelo) por sí sola."
+        },
+        {
+            id: 15,
+            pregunta: "Según el enfoque moderno de Russell y Norvig respecto a la ingeniería de software, ¿cómo se entiende la Inteligencia Artificial?",
+            opciones: ["A) Como el diseño de 'agentes inteligentes' que reciben datos de su entorno, los procesan y ejecutan acciones óptimas.", "B) Como la imitación biológica idéntica de la mente consciente humana.", "C) Como una base de datos estática administrada por reglas humanas.", "D) Como la creación exclusiva de hardware para robótica industrial."],
+            respuestaCorrecta: 0,
+            explicacion: "Russell y Norvig definen el enfoque moderno de la IA como el diseño de sistemas o agentes que toman inputs y devuelven outputs (acciones) para resolver problemas."
+        },
+        {
+            id: 16,
+            pregunta: "¿Cómo se denomina al tipo de Inteligencia Artificial actual (como ChatGPT o el algoritmo de Spotify) que está diseñada y entrenada exclusivamente para una tarea específica?",
+            opciones: ["A) IA General (AGI)", "B) Aprendizaje por Refuerzo Total", "C) IA Estrecha o Débil (ANI)", "D) IA Súper Fuerte (ASI)"],
+            respuestaCorrecta: 2,
+            explicacion: "Toda la IA que existe en la actualidad es Inteligencia Artificial Estrecha o Débil (ANI), ya que solo es buena en la tarea para la que fue entrenada."
+        },
+        {
+            id: 17,
+            pregunta: "Verdadero o Falso. El Sesgo (Bias) en una neurona artificial es un factor numérico que se multiplica por cada entrada externa antes de la suma final.",
+            opciones: ["Verdadero", "Falso"],
+            respuestaCorrecta: 1,
+            explicacion: "Es Falso. El sesgo (Bias) es un valor independiente que NO se multiplica por ninguna variable de entrada; simplemente se SUMA al total acumulado para desplazar la frontera de decisión."
+        },
+        {
+            id: 18,
+            pregunta: "El enfoque de 'Reglas de Asociación' utilizado en E-commerce para descubrir dependencias ocultas (ej. 'quienes compran el producto X tienden a comprar Y') pertenece a la familia de algoritmos de:",
+            opciones: ["A) Aprendizaje Supervisado", "B) Aprendizaje No Supervisado", "C) Aprendizaje Semi Supervisado", "D) Algoritmo de Regresión Lineal"],
+            respuestaCorrecta: 1,
+            explicacion: "Las reglas de asociación forman parte del Aprendizaje No Supervisado, ya que exploran la estructura de datos sin etiquetas previas para descubrir agrupamientos ocultos."
+        },
+        {
+            id: 19,
+            pregunta: "¿Qué función de activación transforma una lista de valores numéricos en una distribución de probabilidades que suma exactamente el 100%, siendo ideal para Clasificación Multiclase en la capa de salida?",
+            opciones: ["A) Función ReLU", "B) Función Escalón", "C) Función Sigmoide", "D) Función Softmax"],
+            respuestaCorrecta: 3,
+            explicacion: "La Función Softmax se usa en la capa de salida y permite distribuir los resultados en porcentajes que juntos suman el 100% (ej. 70% categoría A, 20% B, 10% C)."
+        },
+        {
+            id: 20,
+            pregunta: "Si un sistema de seguridad bancaria analiza el historial de una transacción y responde con la probabilidad de que sea Fraudulenta o Legítima, ¿qué tipo de aprendizaje y tarea está ejecutando?",
+            opciones: ["A) Aprendizaje No Supervisado - Clustering", "B) Aprendizaje Supervisado - Clasificación Binaria", "C) Aprendizaje Supervisado - Regresión", "D) Aprendizaje por Refuerzo"],
+            respuestaCorrecta: 1,
+            explicacion: "Es Clasificación Binaria porque el modelo está decidiendo entre solo dos etiquetas fijas excluyentes (Fraudulenta / Legítima) utilizando datos históricos etiquetados."
+        }
+    ];
+
+    const quizContainer = document.getElementById('quiz-container');
+
+    preguntas.forEach((q, index) => {
+        const questionBlock = document.createElement('div');
+        questionBlock.className = 'question-block';
+        questionBlock.id = `bloque-${index}`;
+
+        const questionTitle = document.createElement('div');
+        questionTitle.className = 'question-title';
+        questionTitle.innerHTML = `${index + 1}. ${q.pregunta}`;
+        questionBlock.appendChild(questionTitle);
+
+        const optionsList = document.createElement('ul');
+        optionsList.className = 'options';
+
+        q.opciones.forEach((opcion, i) => {
+            const li = document.createElement('li');
+            const label = document.createElement('label');
+            const radio = document.createElement('input');
+            
+            radio.type = 'radio';
+            radio.name = `pregunta${index}`;
+            radio.value = i;
+            
+            label.appendChild(radio);
+            label.appendChild(document.createTextNode(opcion));
+            li.appendChild(label);
+            optionsList.appendChild(li);
+        });
+
+        questionBlock.appendChild(optionsList);
+        
+        const feedback = document.createElement('div');
+        feedback.className = 'feedback';
+        feedback.id = `feedback-${index}`;
+        questionBlock.appendChild(feedback);
+
+        quizContainer.appendChild(questionBlock);
+    });
+
+    function evaluarParcial() {
+        let puntaje = 0;
+        let respondidas = 0;
+
+        preguntas.forEach((q, index) => {
+            const opciones = document.getElementsByName(`pregunta${index}`);
+            let seleccionada = -1;
+            
+            for (let i = 0; i < opciones.length; i++) {
+                if (opciones[i].checked) {
+                    seleccionada = parseInt(opciones[i].value);
+                    respondidas++;
+                    break;
+                }
+            }
+
+            const bloque = document.getElementById(`bloque-${index}`);
+            const feedback = document.getElementById(`feedback-${index}`);
+
+            bloque.classList.remove('correct-bg', 'incorrect-bg');
+            feedback.style.display = 'none';
+
+            if (seleccionada === q.respuestaCorrecta) {
+                puntaje++;
+                bloque.classList.add('correct-bg');
+            } else if (seleccionada !== -1) {
+                bloque.classList.add('incorrect-bg');
+                
+                feedback.innerHTML = `<strong>❌ Incorrecto.</strong> La respuesta correcta era:<br><em>${q.opciones[q.respuestaCorrecta]}</em><br><br>${q.explicacion}`;
+                feedback.style.display = 'block';
+            }
+        });
+
+        if (respondidas < preguntas.length) {
+            alert("⚠️ Por favor, responde las 20 preguntas antes de entregar el simulacro.");
+            return;
+        }
+
+        const resultadoDiv = document.getElementById('resultado');
+        const porcentaje = (puntaje * 100) / preguntas.length;
+        
+        resultadoDiv.style.display = 'block';
+        
+        if (porcentaje >= 70) {
+            resultadoDiv.className = 'correct-bg';
+            resultadoDiv.style.color = 'var(--correct-text)';
+            resultadoDiv.innerHTML = `🎉 ¡EXAMEN PROMOCIONADO! <br><br> Obtuviste un <strong>${porcentaje}%</strong> <br>(${puntaje} de ${preguntas.length} respuestas correctas).`;
+        } else if (porcentaje >= 50) {
+            resultadoDiv.className = 'incorrect-bg';
+            resultadoDiv.style.color = 'var(--warning-text)';
+            resultadoDiv.innerHTML = `✅ EXAMEN APROBADO (Condición Regular). <br><br> Obtuviste un <strong>${porcentaje}%</strong> <br>(${puntaje} de ${preguntas.length} respuestas correctas). <br><span style='font-size:0.85em; display:block; margin-top:10px;'>*Faltó un poco para la promoción. Revisa tus errores arriba.</span>`;
+        } else {
+            resultadoDiv.className = 'feedback'; 
+            resultadoDiv.style.display = 'block';
+            resultadoDiv.style.marginTop = '35px';
+            resultadoDiv.innerHTML = `❌ EXAMEN DESAPROBADO. <br><br> Obtuviste un <strong>${porcentaje}%</strong> <br>(${puntaje} de ${preguntas.length} respuestas correctas). <br><span style='font-size:0.85em; display:block; margin-top:10px;'>Por favor, revisa las correcciones arriba y vuelve a estudiar los apuntes.</span>`;
+        }
+
+        document.getElementById('btn-enviar').disabled = true;
+        document.getElementById('btn-enviar').innerText = 'Examen Entregado';
+        const todosLosRadios = document.querySelectorAll('input[type="radio"]');
+        todosLosRadios.forEach(radio => {
+            radio.disabled = true;
+            radio.parentElement.style.cursor = 'not-allowed';
+            radio.parentElement.style.opacity = '0.7';
+        });
+        
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+</script>
+</body>
+</html>
